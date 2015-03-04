@@ -9,10 +9,10 @@ import static java.lang.System.out;
 
 public class Tests {
     public static void main(String[] args) {
-        Dipendente rossi = new Dipendente("Mario Rossi", 2000.0);
+        Dipendente rossi = new Dipendente("Mario Rossi", 2500.0);
         rossi.setIndirizzo("Roma, via Rossini, 15");
         rossi.setTelefono("06 8989898");
-        Dipendente verdi = new Dipendente("Ugo Verdi", 1850.0);
+        Dipendente verdi = new Dipendente("Ugo Verdi", 2000.0);
         verdi.setIndirizzo("Roma, via G. Verdi, 30");
         for (Dipendente d : new Dipendente[]{rossi, verdi}) {
             out.print("Dipendente: "+d.getNomeCognome());
