@@ -2,14 +2,82 @@ package mp;
 
 import java.util.Arrays;
 import java.util.InputMismatchException;
+import java.util.Objects;
 import java.util.Scanner;
 
 import static java.lang.System.out;
 
 
-public class Tests {
-    public static void main(String[] args) {
+class LPoint {
+    public final int x, y;
+    public final String label;
 
+    public LPoint(int x, int y, String lab) {
+        this.x = x;
+        this.y = y;
+        label = lab;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || o.getClass() != getClass())
+            return false;
+        LPoint p = (LPoint)o;
+        return (p.x == x && p.y == y && Objects.equals(label, p.label));
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName()+"[x="+x+",y="+y+",label="+label+"]";
+    }
+}
+
+
+
+public class Tests {
+    public static void stampaStipendi(Dipendente[] dd) {
+        for (Dipendente d : dd)
+            out.println(d.getNomeCognome()+" Stipendio: "+
+                    d.getStipendio());
+    }
+
+    public static void main(String[] args) {
+        Object o = new int[3];
+        Object d = new Dirigente("Carlo", 100);
+        Object[] arrO = new int[2][2];
+
+        LPoint p1 = new LPoint(0, 0, "origine");
+        LPoint p2 = new LPoint(0, 0, "origine");
+        if (p1.equals(p2))
+            out.println("uguali");
+        else
+            out.println("diversi");
+
+        out.println(p1);
+
+        /*
+        Dirigente dir = new Dirigente("Carla Bianchi", 500);
+        Dipendente[] dd = new Dipendente[3];
+        dd[0] = new Dipendente("Mario Rossi", 1000);
+        dd[1] = dir;
+        dd[2] = new Dirigente("Ugo Gialli", 200);
+        stampaStipendi(dd);
+        dd[1].setStipendio(1000);
+        if (dd[0] instanceof Dirigente)
+            ((Dirigente)dd[0]).setBonus(200);
+        stampaStipendi(dd);
+
+
+        Dirigente[] dirs = new Dirigente[4];
+        dd = dirs;
+        dd[0] = new Dipendente("Giorgio");
+        */
+
+        /*
+        Dirigente dir = new Dirigente("Carla Bianchi", 500);
+        out.print(dir.getCodice()+ " "+dir.getNomeCognome());
+        out.println("  Stipendio: "+dir.getStipendio());
+        */
 
         /*
         Dipendente rossi = new Dipendente("Mario Rossi", 2500.0);

@@ -2,10 +2,8 @@ package mp;
 
 import java.util.Objects;
 
-/** Un oggetto {@code Dipendente} rappresenta un dipendente dell'azienda.
- * @author RIK
- * @version 2015, Feb 18 */
-public class Dipendente {
+/** Un oggetto {@code Dipendente} rappresenta un dipendente dell'azienda */
+public class Dipendente extends Object {
     /** Mantiene i contatti di un dipendente come indirizzo, telefono, ecc. */
     public static class Contatti {
         /** @return  l'indirizzo del dipendente */
@@ -66,7 +64,7 @@ public class Dipendente {
     public void setTelefono(String telefono) { contatti.telefono = telefono; }
 
     /** @return il codice di questo dipendente */
-    public long getCodice() { return codice; }
+    public final long getCodice() { return codice; }
 
     /** @return il nome e cognome di questo dipendente */
     public String getNomeCognome() { return nomeCognome; }
@@ -81,6 +79,20 @@ public class Dipendente {
         if (nuovoStipendio < 0)
             throw new IllegalArgumentException("Stipendio non può essere negativo");
         stipendio = nuovoStipendio;
+    }
+
+    /** @return il supervisore di questo dipendente */
+    public Dipendente getSupevisore() { return supervisore; }
+
+    /** Imposta il supervisore di questo dipendente.
+     * @param supervisore  il nuovo supervisore */
+    public void setSupervisore(Dipendente supervisore) {
+        this.supervisore = supervisore;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName()+"[codice="+codice+",nomeCognome="+nomeCognome+"]";
     }
 
 
@@ -101,4 +113,5 @@ public class Dipendente {
     private String nomeCognome;
     private double stipendio;
     private Contatti contatti;
+    private Dipendente supervisore;   // Inizialmente è null
 }
