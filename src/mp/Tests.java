@@ -9,6 +9,9 @@ import static java.lang.System.out;
 
 public class Tests {
     public static void main(String[] args) {
+
+
+        /*
         Dipendente rossi = new Dipendente("Mario Rossi", 2500.0);
         rossi.setIndirizzo("Roma, via Rossini, 15");
         rossi.setTelefono("06 8989898");
@@ -22,17 +25,15 @@ public class Tests {
             out.println("    Indirizzo: " + con.getIndirizzo());
             out.println("    Telefono: " + con.getTelefono());
         }
+        */
 
         //excep();
         //arrayEq();
         //equality();
     }
 
-    public static void stampaStipendi(Dipendente[] dd) {
-        for (Dipendente d : dd)
-            out.println("Stipendio di "+d.getNomeCognome()+" è "+d.getStipendio());
-        out.println();
-    }
+
+
 
     private static void equality() {
         String s1 = "una stringa";

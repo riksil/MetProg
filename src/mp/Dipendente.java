@@ -83,12 +83,6 @@ public class Dipendente {
         stipendio = nuovoStipendio;
     }
 
-    /** @return il supervisore di questo dipendente */
-    public Dipendente getSupervisore() { return supervisore; }
-
-    /** Imposta il supervisore di questo dipendente.
-     * @param s  il supervisore */
-    public void setSupervisore(Dipendente s) { supervisore = s; }
 
     @Override
     public String toString() {
@@ -112,5 +106,4 @@ public class Dipendente {
     private String nomeCognome;
     private double stipendio;
     private Contatti contatti;
-    private Dipendente supervisore;             // Inizialmente è null
 }
