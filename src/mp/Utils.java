@@ -136,9 +136,9 @@ public class Utils {
         test_prime();
         test_align();
         test_readDistinct();
-
-
     }
+
+    
 
     private static boolean timeLEQ2(int h1, int m1, int s1, int h2, int m2, int s2) {
         return h1 < h2 || h1 == h2 && m1 < m2 || h1 == h2 && m1 == m2 && s1 <= s2;

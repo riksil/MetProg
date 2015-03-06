@@ -84,11 +84,6 @@ public class Dipendente {
     }
 
 
-    @Override
-    public String toString() {
-        return getClass().getName()+"[codice="+codice+",nomeCognome="+nomeCognome+"]";
-    }
-
 
     private static long ultimoCodice;     // Ultimo codice usato
 
