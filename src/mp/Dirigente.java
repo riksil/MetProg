@@ -22,7 +22,7 @@ public class Dirigente extends Dipendente {
     @Override
     public void setSupervisore(Dipendente supervisore) {
         if (!(supervisore instanceof Dirigente))
-            throw new IllegalArgumentException("IL supervisore di un dirigente deve essere un dirigente");
+            throw new IllegalArgumentException("Il supervisore di un dirigente deve essere un dirigente");
         super.setSupervisore(supervisore);
     }
 
