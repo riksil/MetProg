@@ -3,7 +3,7 @@ package mp;
 import java.util.Objects;
 
 /** Un oggetto {@code Dipendente} rappresenta un dipendente dell'azienda */
-public class Dipendente extends Object {
+public class Dipendente implements Comparable<Dipendente> {
     /** Mantiene i contatti di un dipendente come indirizzo, telefono, ecc. */
     public static class Contatti {
         /** @return  l'indirizzo del dipendente */
@@ -93,6 +93,11 @@ public class Dipendente extends Object {
     @Override
     public String toString() {
         return getClass().getName()+"[codice="+codice+",nomeCognome="+nomeCognome+"]";
+    }
+
+    public int compareTo(Dipendente d) {
+        return (codice < d.getCodice() ? -1 :
+                (codice > d.getCodice() ? 1 : 0));
     }
 
 
