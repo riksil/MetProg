@@ -2,6 +2,8 @@ package mp.util;
 
 import mp.util.HTree;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 import static java.lang.System.out;   // Importa il campo statico out di System
@@ -171,6 +173,28 @@ public class Utils {
             }
         }
         return count;
+    }
+
+    /** Ritorna una mappa che ad ogni parola del file specificato associa il
+     * numero di occorrenze. Per parola si intende una sequenza di lettere
+     * (riconosciute dal metodo {@link java.lang.Character#isLetter(char)}) di
+     * lunghezza massimale. Le parole sono sensibili alle maiuscole/minuscole.
+     * @param path  il percorso del file
+     * @param charset  il charset per decodificare i caratteri
+     * @return  una mappa che conta le occorenze delle parole
+     * @throws IOException se si verifica un errore accedendo al file */
+    public static Map<String,Integer> wordMap(Path path, String charset)
+            throws IOException {
+        Map<String,Integer> map = new HashMap<>();
+        try (Scanner scan = new Scanner(path, charset)){
+            scan.useDelimiter("[^\\p{IsLetter}]+");    // Caratteri != lettere
+            while (scan.hasNext()) {
+                String w = scan.next();
+                Integer n = map.get(w);
+                map.put(w, (n != null ? n+1 : 1));
+            }
+        }
+        return map;
     }
 
 
