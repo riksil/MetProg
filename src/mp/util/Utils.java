@@ -1,9 +1,9 @@
 package mp.util;
 
-import mp.util.HTree;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
 import static java.lang.System.out;   // Importa il campo statico out di System
@@ -197,6 +197,42 @@ public class Utils {
         return map;
     }
 
+    /** Ritorna una stringa che rappresenta l'albero di directory e file a partire
+     * dal percorso specificato.
+     * @param root  percorso della directory radice
+     * @return  una stringa che rappresenta l'albero di directory e file
+     * @throws IOException se si verifi qualche errore nell'accesso ai file/dir */
+    public static String fileTreeToString(Path root) throws IOException {
+        // Classe locale che realizza un visitatore di un albero di dir e file
+        class Visitor extends SimpleFileVisitor<Path> {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                    throws IOException {
+                if (Files.isHidden(dir)) return FileVisitResult.SKIP_SUBTREE;
+                s += pre+(pre.isEmpty() ? "" : "---")+dir.getFileName()+"\n";
+                pre += "    |";
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                s += pre+"---"+file.getFileName()+" " + attrs.size()+"\n";
+                return FileVisitResult.CONTINUE;
+            }
+
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                pre = pre.substring(0, pre.length() - 4);
+                s += pre + "\n";
+                return FileVisitResult.CONTINUE;
+            }
+
+            String s = "", pre = "";
+        }
+        Visitor vis = new Visitor();    // Crea il visitatore e lo passa
+        Files.walkFileTree(root, vis);  // al metodo che effettua la visita
+        return vis.s;                   // Al termine della visita, in s c'è
+    }                                   // la rappresentazione dell'albero
+
 
 
     public static void main(String[] args) {
@@ -208,9 +244,12 @@ public class Utils {
         test_align();
         test_readDistinct();
         */
+        /*
         test_subwords();
         test_subwordsCount();
         test_HTree();
+        */
+        test_fileTreeToString();
     }
 
 
@@ -300,5 +339,17 @@ public class Utils {
         tree.add("Data Base", "SQL", "Data Mining");
         tree.add("Operating System", "Unix", "Linux", "MacOS X");
         out.println(tree.toFullString());
+    }
+
+    private static void test_fileTreeToString() {
+        Scanner input = new Scanner(System.in);
+        out.println("Test fileTreeToString: digita un percorso: ");
+        String pathname = input.nextLine();
+        Path root = Paths.get(pathname).toAbsolutePath();
+        try {
+            out.println(fileTreeToString(root));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
