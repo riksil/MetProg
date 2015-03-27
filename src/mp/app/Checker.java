@@ -43,15 +43,12 @@ public interface Checker {
      * @param min,max  minima e massima lunghezza
      * @return un Checker che controlla che la lunghezza sia nei limiti dati */
     static Checker getCheckLen(int min, int max) {
-        return new Checker() {
-            @Override
-            public String valid(String s) {
-                if (s == null) return "Non può essere null";
-                int len = s.length();
-                if (len < min || len > max)
-                    return "La lunghezza deve essere tra "+min+" e "+max;
-                return null;
-            }
+        return (s) -> {
+            if (s == null) return "Non può essere null";
+            int len = s.length();
+            if (len < min || len > max)
+                return "La lunghezza deve essere tra "+min+" e "+max;
+            return null;
         };
     }
 
