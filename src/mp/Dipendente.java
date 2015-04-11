@@ -92,7 +92,7 @@ public class Dipendente implements Comparable<Dipendente> {
 
     @Override
     public String toString() {
-        return getClass().getName()+"[codice="+codice+",nomeCognome="+nomeCognome+"]";
+        return getClass().getName()+"[codice="+codice+",nomeCognome="+nomeCognome+",stipendio="+stipendio+"]";
     }
 
     public int compareTo(Dipendente d) {
