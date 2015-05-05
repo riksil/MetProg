@@ -1,7 +1,5 @@
 package mp;
 
-import mp.util.Utils;
-
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
@@ -99,7 +97,7 @@ public class Lambda {
         out.println(fruits);
 
         try {
-            Map<String,Integer> wmap = Utils.wordMap(Paths.get("files",
+            Map<String,Integer> wmap = mp.file.Utils.wordMap(Paths.get("files",
                     "alice_it_utf8.txt"), "utf8");
             out.println("Numero chiavi: "+wmap.size());
             out.println("Numero occorrenze: "+ sum(wmap.values()));

@@ -1,17 +1,69 @@
-package mp;
+package mp.file;
 
-import mp.util.Utils;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.*;
 import java.util.*;
+import java.util.function.Function;
+import mp.util.Utils;
+
 import static java.lang.System.out;
 
 /** Una classe per fare test sui file */
 public class TestFile {
-    public static void main(String[] args) {
-        //info();
-        test_wordMap();
+    /** Mette alla prova un metodo che preso in input il percorso di una directory
+     * ritorna la somma di tutti i byte dei file regolari contenuti nella
+     * directory. Stampa il valore ritornato, il minimo, il massimo e la media dei
+     * tempi di esecuzione relativamente alla n invocazioni. Inoltre, stampa i
+     * picchi, registrati durante il test, del numero di thread addizionali usati e
+     * della memoria addizionale usata.
+     * @param name  nome del metodo
+     * @param ts  permette di invocare il metodo
+     * @param p  il percorso della directory
+     * @param n  numero di volte che il metodo è invocato */
+    public static void test_ts(String name, Function<Path,Long> ts, Path p, int n) {
+        out.println(name+"  Directory: "+p);
+        long max = 0, min = -1, size = 0;
+        double average = 0;
+        ThreadMXBean tm = ManagementFactory.getThreadMXBean();
+        int nt = tm.getThreadCount();   // Numero attuale di thread
+        tm.resetPeakThreadCount();
+        long mem = Utils.getUsedMem();  // Memoria attualmente usata
+        Utils.resetPeakMem();
+        try {
+            for (int i = 0; i < n; i++) {
+                long time = System.currentTimeMillis();
+                size = ts.apply(p);
+                time = System.currentTimeMillis() - time;
+                if (time > max) max = time;
+                if (min == -1 || time < min) min = time;
+                average += time;
+            }
+        } catch (Exception ex) { out.println(ex); }
+        nt = tm.getPeakThreadCount() - nt;  // Picco numero thread addizionali
+        mem = Utils.getPeakMem() - mem;     // Picco memoria addizionale
+        average /= n;
+        out.println(String.format("Size: %s  Time (seconds): min = %.2f "+
+                        " max = %.2f ave = %.2f",
+                Utils.toGMKB(size), min/1000.0, max/1000.0, average/1000.0));
+        out.println("Picco numero thread addizionali: "+nt);
+        out.println("Picco memoria addizionale: " + Utils.toGMKB(mem));
     }
+
+
+    public static void main(String[] args) {
+        Path dir = Paths.get("/usr");
+        //test_ts("totalSize", mp.file.Utils::totalSize, dir, 10);
+        //test_ts("totalSizeNaiveConcur FixedThreadPool 500", mp.file.Utils::totalSizeNaiveConcur, dir, 10);
+        //test_ts("totalSizeNaiveConcur CachedThreadPool", mp.file.Utils::totalSizeNaiveConcur, dir, 10);
+        //test_ts("totalSizeNaiveConcur WorkStealingPool", mp.file.Utils::totalSizeNaiveConcur, dir, 10);
+        //test_ts("totalSizeConcur", mp.file.Utils::totalSizeConcur, dir, 10);
+        //test_ts("totalSizeConcur2", mp.file.Utils::totalSizeConcur2, dir, 10);
+        //test_ts("totalSizeQueue", mp.file.Utils::totalSizeQueue, dir, 10);
+        test_ts("totalSizeForkJoin", mp.file.Utils::totalSizeForkJoin, dir, 10);
+    }
+
 
     /** Prova alcuni metodi di {@link java.nio.file.Files} chiedendo un percorso
      * da tastiera e controllando se esiste, se è una directory, ecc. */
@@ -65,7 +117,7 @@ public class TestFile {
             out.println("Digita un charset: ");
             String charset = input.nextLine();
             try {
-                Map<String,Integer> map = Utils.wordMap(path, charset);
+                Map<String,Integer> map = mp.file.Utils.wordMap(path, charset);
                 out.println("Numero parole: "+map.size());
                 out.println(randSample(map, 100));
             } catch (IOException e) { out.println(e); }
