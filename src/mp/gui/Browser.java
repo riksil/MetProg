@@ -1,15 +1,19 @@
 package mp.gui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -20,6 +24,13 @@ import javafx.stage.Stage;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
+
+import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 /** Un mini web browser */
 public class Browser extends Application {
@@ -103,7 +114,9 @@ public class Browser extends Application {
             }
         });
 
-        HBox hb = new HBox(back, forth, url, inspB);
+        Node dl = downloadImages(we);
+
+        HBox hb = new HBox(back, forth, url, inspB, dl);
         HBox.setHgrow(url, Priority.ALWAYS);      // Si estende in orizzontale
         VBox vb = new VBox(hb, wView);
         VBox.setVgrow(wView, Priority.ALWAYS);    // Si estende in verticale
@@ -207,6 +220,137 @@ public class Browser extends Application {
 
         private TreeView<org.w3c.dom.Node> treeV;
     }
+
+    /** Ritorna l'insieme degli URI delle immagini contenute nella pagina relativa
+     * al Document dato. Eventuali URI malformati sono ignorati. Se il Document
+     * non ha un URI, ritorna un insieme vuoto.
+     * @param doc  il Document di ina pagina web
+     * @return l'insieme degli URI delle immagini della pagina */
+    private static Set<URI> imgURIs(Document doc) {
+        Set<URI> uris = new HashSet<URI>();
+        try {
+            URI base = new URI(doc.getDocumentURI());
+            NodeList ii = doc.getElementsByTagName("img");
+            for (int i = 0 ; i < ii.getLength() ; i++) {
+                org.w3c.dom.Node a = ii.item(i).getAttributes()
+                        .getNamedItem("src");
+                if (a != null)
+                    try {
+                        uris.add(base.resolve(a.getNodeValue()));
+                    } catch (Exception e) {}
+            }
+        } catch (Exception e) {}
+        return uris;
+    }
+
+    /** Gestisce una finestra di primo livello che visualizza immagini che possono
+     * essere aggiunte dinamicamente. */
+    private static class DownloadWin {
+        /** Crea il gestore della finestra per le immagini. La finestra non è
+         * resa visibile. */
+        DownloadWin() {
+            stage = new Stage();
+            imgPane = new FlowPane();
+            ScrollPane sp = new ScrollPane(imgPane);
+            pageList = new VBox();
+            ScrollPane sp2 = new ScrollPane(pageList);
+            SplitPane split = new SplitPane(sp, sp2);
+            stage.setScene(new Scene(split, 500, 400));
+        }
+
+        /** Aggiunge una nuova pagina di cui è iniziato il downloading delle
+         * immagini tramite lo specificato task.
+         * @param task  il task che esegue il dowloading delle immagini
+         * @param page  l'URL della pagina */
+        void add(Task task, String page) {
+            ProgressIndicator pi = new ProgressIndicator();
+            pi.progressProperty().bind(task.progressProperty());
+            Button stop = new Button("X");
+            stop.setOnAction(e -> task.cancel());
+            stop.disableProperty().bind(task.runningProperty().not());
+            HBox hb = new HBox(pi, stop);
+            hb.setAlignment(Pos.BOTTOM_LEFT);
+            pageList.getChildren().add(new Label(page, hb));
+        }
+
+        /** Aggiunge un'immagine e la visualizza
+         * @param img  un'immagine */
+        void add(Image img) {
+            imgPane.getChildren().add(new ImageView(img));
+        }
+
+        /** Rende la finestra visibile e la porta in primo piano */
+        void show() {
+            stage.show();       // Rende visibile la finestra se già non lo era
+            stage.toFront();    // Porta la finestra in primo piano
+        }
+
+        private final Stage stage;
+        private final FlowPane imgPane;
+        private final VBox pageList;
+    }
+
+    /** Un task che può essere eseguito in modo asincrono per scaricare un insieme
+     * di immagini */
+    private static class ImgTask extends Task<Void> {
+        /** Crea un task asincrono per scaricare le immagini relative all'insieme
+         * di URI dato e per seguire su ognuna di esse l'azione specificata.
+         * L'azione è eseguita nel JavaFX Thread.
+         * @param uu  insieme di URI di immagini
+         * @param act  azione da compiere per ogni immagine scaricata */
+        ImgTask(Set<URI> uu, Consumer<Image> act) {
+            uris = uu;
+            action = act;
+        }
+
+        @Override
+        protected Void call() throws Exception {
+            int count = 0;        // Per il conteggio delle immagini scaricate
+            for (URI u : uris) {
+                Image img = new Image(u.toString());     // Scarica l'immagine
+                        // Esegue l'azione in modo asincrono nel JavaFX Thread
+                Platform.runLater(() -> action.accept(img));
+                count++;
+                updateProgress(count, uris.size());
+                if (isCancelled())
+                    break;
+            }
+            return null;
+        }
+
+        private final Set<URI> uris;
+        private final Consumer<Image> action;
+    }
+
+    /** Ritorna un componente grafico (un Node) che contiene due bottoni per
+     * gestire il dowloading asincrono e la visualizzazione delle immagini
+     * contenute nelle pagine scaricate dalla web engine data.
+     * @param wEng  una web engine
+     * @return un componente grafico (un Node) con due bottoni */
+    private static Node downloadImages(WebEngine wEng) {
+        ExecutorService exec = Executors.newCachedThreadPool(r -> {  // Factory
+            Thread t = new Thread(r);     // dei thread usati dall'esecutore per
+            t.setDaemon(true);            // far sì che siano daemon thread, cioè
+            return t;                     // non bloccano la chiusura del programma
+        });
+        DownloadWin win = new DownloadWin();      // Per visualizzare le immagini
+        Button loadBtn = new Button(null, new ImageView(Browser.class.
+                getResource("load16.png").toString()));
+        loadBtn.disableProperty().bind(Bindings.createBooleanBinding(
+                () -> wEng.getDocument() == null, wEng.documentProperty()));
+        loadBtn.setOnAction(e -> {
+            Document d = wEng.getDocument();
+            Task t = new ImgTask(imgURIs(d),win::add);
+            win.add(t, d.getDocumentURI());
+            exec.submit(t);
+        });
+        Button winBtn = new Button(null, new ImageView(Browser.class.
+                getResource("win16.png").toString()));
+        winBtn.setOnAction(e -> win.show());
+        return new HBox(loadBtn, winBtn);
+    }
+
+
 
 
     private WebView wView;
