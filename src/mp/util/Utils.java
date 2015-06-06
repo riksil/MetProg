@@ -199,6 +199,20 @@ public class Utils {
                 .forEach(java.lang.management.MemoryPoolMXBean::resetPeakUsage);
     }
 
+    /** Ritorna un array di interi di lunghezza n che contiene gli indici 0,1,...n-1
+     * disposti in modo random.
+     * @param n  la lunghezza dell'array
+     * @return un array che contiene gli indici 0,1,...n-1 in ordine random */
+    public static int[] rndIndices(int n) {
+        int[] indices = new int[n];
+        List<Integer> indList = new ArrayList<>();
+        for (int i = 0 ; i < n ; i++) indList.add(i);
+        for (int i = 0 ; i < n ; i++)
+            indices[i] = indList.remove(RND.nextInt(indList.size()));
+        return indices;
+    }
+
+
 
     public static void main(String[] args) {
         /*
@@ -217,7 +231,7 @@ public class Utils {
 
     }
 
-
+    private static final Random RND = new Random();
 
     private static boolean timeLEQ2(int h1, int m1, int s1, int h2, int m2, int s2) {
         return h1 < h2 || h1 == h2 && m1 < m2 || h1 == h2 && m1 == m2 && s1 <= s2;
